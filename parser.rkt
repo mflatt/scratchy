@@ -33,7 +33,8 @@
    [(:seq "@" (:+ (:or #\- (:/ #\A #\Z #\a #\z)))) 
     (token-ID (string->symbol (substring lexeme 1)))]
    [(:seq (:? (:or "-" "+")) (:+ (:/ "0" "9")) (:? ".") (:* (:/ "0" "9")))
-    (token-NUM (string->number (string-append "#e" lexeme)))]
+    (token-NUM (parameterize ([read-decimal-as-inexact #f])
+                 (string->number lexeme)))]
    [(:seq "---" (:* "-")) 'SEP]
    ["is" 'IS]
    ["{" 'OPEN]

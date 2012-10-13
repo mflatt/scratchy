@@ -1,7 +1,8 @@
 #lang reader "exact.rkt" "scratchy.rkt"
 
-;; The "scratchy.rkt" language prevents abuse of `set!'
-;; => `syntax-local-value'
+;; Use the "exact.rkt" language constructor so that all
+;;  number constants are parsed as exact
+;; => `syntax/module-reader'
 
 (define-sprite duck
   #:image duck-image
@@ -23,7 +24,6 @@
    (forward 2)
    (turn (- (random 5) 2))
    (when (touches? aq)
-     ;; (set! duck 8) ; syntax error
      (set! score (+ 1 score))
      (say score))
    (when (touches? duck)
