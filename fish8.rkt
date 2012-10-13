@@ -1,4 +1,4 @@
-#lang reader "exact.rkt" "scratchy.rkt"
+#lang s-exp "scratchy.rkt"
 
 ;; The "scratchy.rkt" language prevents abuse of `set!'
 ;; => `syntax-local-value'
