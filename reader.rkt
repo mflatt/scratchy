@@ -3,14 +3,17 @@
          parser-tools/lex)
 
 (provide read-syntax
-         get-info
-         color-lexer)
+         read
+         get-info)
 
 ;; To read a module:
 (define (read-syntax src-name in)
-  (port-count-lines! in)
   (define stx (parse src-name in))
   (datum->syntax #f `(module prog scratchy (#%module-begin . ,stx))))
+
+;; In case `read' is used, instead of `read-syntax':
+(define (read in)
+  (syntax->datum (read-syntax (object-name in) in)))
 
 ;; To get info about the language's environment support:
 (define (get-info in mod line col pos)
