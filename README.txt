@@ -20,9 +20,9 @@ same program using plain text. You can run "fish.rkt" with
 Move the duck using the arrow keys to chase the fish and keep it in
 the blue aquarium. The fish says your current score.
 
-The programs "fish1.rkt" through "fish10.rkt" are the tutorial, and
-then there's a relatively big jump to "fish.rkt" the relies on
-"parser.rkt".
+The programs "fish1.rkt" through "fish12.rkt" are the tutorial, ending
+with "fish.rkt" (which looks like a big jump, but it's mostly
+"parser.rkt").
 
 
 The code should run in DrRacket v5.3 and later.
