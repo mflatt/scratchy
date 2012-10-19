@@ -31,7 +31,7 @@ image is @fish-image
 
 do
  forever {
-   sleep 0.02
+   wait 0.02
    forward 2
    turn random 5 - 2
  }
@@ -60,6 +60,7 @@ Here's the grammar of this textual language:
                @BNF-seq[@litchar{size} @litchar{is} <expr>]
                @BNF-seq[@litchar{direction} @litchar{is} <expr>]
                @BNF-seq[@litchar{on} <key> @litchar{key} @kleenestar[<stmt>]]
+               @BNF-seq[@litchar{on} <string> @litchar{message} @kleenestar[<stmt>]]
                @BNF-seq[@litchar{variable} <id> @litchar{is} <expr>]
                @BNF-seq[@litchar{do} @kleenestar[<stmt>]])
 (list <expr> <number>
@@ -75,9 +76,11 @@ Here's the grammar of this textual language:
              @BNF-seq[@litchar{turn} <expr>]
              @BNF-seq[@litchar{forward} <expr>]
              @BNF-seq[@litchar{change} @litchar{size} <expr>]
-             @BNF-seq[@litchar{sleep} <expr>]
+             @BNF-seq[@litchar{wait} <expr>]
              @BNF-seq[@litchar{say} <expr>]
              @BNF-seq[@litchar{hush}]
+             @BNF-seq[@litchar{send} <expr> @litchar{to} <expr>]
+             @BNF-seq[@litchar{send} <expr> @litchar{to} @litchar{everyone}]
              @BNF-seq[@litchar{forever} @litchar["{"] @kleenestar[<stmt>] @litchar["}"]]
              @BNF-seq[@litchar{while} <expr> @litchar["{"] @kleenestar[<stmt>] @litchar["}"]]
              @BNF-seq[@litchar{if} <expr> @litchar["{"] @kleenestar[<stmt>] @litchar["}"]]
@@ -117,7 +120,8 @@ synchronizing with the eventspace in which Scratchy is run.
                  [x real? 0]
                  [y real? 0]
                  [key-callback (boolean? (or/c symbol? char?) . -> . any) void]
-                 [mouse-callback (boolean? real? real? . -> . any) void])]{
+                 [mouse-callback (boolean? real? real? . -> . any) void]
+                 [message-callback (any/c . -> . any) void])]{
 
 Creates a @tech{sprite}.
 
@@ -127,7 +131,10 @@ argument is @racket[#t] for a key press and @racket[#f] for a key
 release.
 
 The @racket[mouse-callback] function is called in a fresh thread for a
-mouse click on the sprite.}
+mouse click on the sprite.
+
+The @racket[message-callback] function is called in a fresh thread for a
+@method[sprite% message] call to the sprite.}
 
 @defmethod[(forward [steps real?]) void?]{
 
@@ -185,5 +192,9 @@ Sets the sprite's speech balloon to show @racket[v].}
 @defmethod[(hush) void?]{
 
 Removes the sprite's speech balloon, if any.}
+
+@defmethod[(message [v any/c]) void?]{
+
+Calls the sprite's message callback.}
 
 }

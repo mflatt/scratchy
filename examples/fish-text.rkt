@@ -12,7 +12,6 @@ on up key
  turn to 0
 
 on down key
- say "down!"
  move y -10
  turn to 180
 
@@ -33,6 +32,12 @@ on + key
 on - key
  change size -0.1
 
+on "hit" message
+ say "yum!"
+
+on "gone" message
+ hush
+
 -------------------------------------
 fish
 
@@ -42,7 +47,7 @@ variable score is 0
 
 do
  forever {
-   sleep 0.02
+   wait 0.02
    forward 2
    turn random 5 - 2
   
@@ -53,17 +58,19 @@ do
 
    if touches duck {
      hush
+     send "hit" to everyone
      turn 100
      while touches duck {
      }
+     send "gone" to duck
    }
  }
 
 do
  forever {
-  sleep 0.1
+  wait 0.1
   change size 0.05
-  sleep 0.1
+  wait 0.1
   change size -0.05
  }
 

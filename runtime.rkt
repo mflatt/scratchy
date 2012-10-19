@@ -7,10 +7,16 @@
          slideshow/balloon)
 
 (provide run
-         sprite%)
+         sprite%
+         task-custodian)
 
 (define draw-bounds? #f)
 (define draw-hit? #f)
+
+(define task-custodian (make-custodian))
+(define (task-thread thunk)
+  (parameterize ([current-custodian task-custodian])
+    (thread thunk)))
 
 (define (run sprites
              #:on-close [do-on-close void])
@@ -63,20 +69,23 @@
                                 #t)))
                        (refresh))))))
 
-  (thread (lambda ()
-            (let loop ()
-              (sleep 0.03)
-              (define continue (make-semaphore))
-              (queue-callback
-               (lambda ()
-                 (define-values (w h) (send c get-client-size))
-                 (when (for/fold ([update? #f]) ([sprite (in-list sprites)])
-                         (or (send sprite tick w h)
-                             update?))
-                   (send c refresh))
-                 (semaphore-post continue)))
-              (semaphore-wait continue)
-              (loop))))
+  (for ([sprite (in-list sprites)])
+    (send sprite set-others sprites))
+
+  (task-thread (lambda ()
+                 (let loop ()
+                   (sleep 0.03)
+                   (define continue (make-semaphore))
+                   (queue-callback
+                    (lambda ()
+                      (define-values (w h) (send c get-client-size))
+                      (when (for/fold ([update? #f]) ([sprite (in-list sprites)])
+                              (or (send sprite tick w h)
+                                  update?))
+                        (send c refresh))
+                      (semaphore-post continue)))
+                   (semaphore-wait continue)
+                   (loop))))
   
   (send f show #t))
 
@@ -90,10 +99,12 @@
           [(init-s size) 1]
           [direction 90]
           [key-callback void]
-          [mouse-callback void])
+          [mouse-callback void]
+          [message-callback void])
 
     (define on-key key-callback)
     (define on-mouse mouse-callback)
+    (define on-message message-callback)
 
     (define-syntax-rule (as-event e ...)
       (call-as-event (lambda () e ...)))
@@ -238,7 +249,7 @@
            #t))
 
     (define/public (key down? key)
-      (thread
+      (task-thread
        (lambda ()
          (on-key down? key))))
 
@@ -288,7 +299,7 @@
 
     (define/public (mouse down? mx my)
       (let-values ([(mx my) (reverse-transform mx my)])
-        (thread
+        (task-thread
          (lambda ()
            (on-mouse down? mx my)))))
 
@@ -339,5 +350,19 @@
                                   [ddy (in-range pw)])
                           (let-values ([(mx my) (transform (+ i dx (/ ddx s)) (+ j dy (/ ddy s)))])
                             (send other hits?/i mx my)))))))))
+
+    (define/public (message m)
+      (task-thread
+       (lambda ()
+         (on-message m))))
+
+    (define/public (tell other m)
+      (send other message m))
+
+    (define others null)
+    (define/public (set-others l) (set! others l))
+    (define/public (broadcast m)
+      (for ([other (in-list others)])
+        (send other message m)))
     
     (super-new)))

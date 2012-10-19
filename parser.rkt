@@ -24,8 +24,8 @@
   (EOF SEP IS OPEN CLOSE ASSIGN 
        PLUS MINUS TIMES DIVIDE
        IMAGE MOVE X Y CHANGE SIZE
-       TURN TO ON KEY SAY HUSH
-       DO FOREVER FORWARD IF WHILE SLEEP
+       TURN TO ON KEY MESSAGE SEND EVERYONE SAY HUSH
+       DO FOREVER FORWARD IF WHILE WAIT
        RANDOM VARIABLE TOUCHES DIRECTION
        WHITESPACE))
 
@@ -47,6 +47,9 @@
    [(:or "<=" ">=") (token-BINOP (string->symbol lexeme))]
    ["image" 'IMAGE]
    ["key" 'KEY]
+   ["message" 'MESSAGE]
+   ["send" 'SEND]
+   ["everyone" 'EVERYONE]
    ["move" 'MOVE]
    ["x" 'X]
    ["y" 'Y]
@@ -63,7 +66,7 @@
    ["while" 'WHILE]
    ["random" 'RANDOM]
    ["variable" 'VARIABLE]
-   ["sleep" 'SLEEP]
+   ["wait" 'WAIT]
    ["say" 'SAY]
    ["hush" 'HUSH]
    ["touches" 'TOUCHES]
@@ -98,6 +101,9 @@
               [(ON <ws> <key> <ws> KEY <ws> <stmts>) (list* (at-src '#:key)
                                                             $3
                                                             $7)]
+              [(ON <ws> STRING <ws> MESSAGE <ws> <stmts>) (list* (at-src '#:message)
+                                                                 $3
+                                                                 $7)]
               [(VARIABLE <ws> ID <ws> IS <ws> <expr>) (list (at-src '#:variable)
                                                             $3
                                                             $7)]
@@ -116,12 +122,14 @@
             [(TURN <ws> <expr>) (at-src `(turn ,$3))]
             [(FORWARD <ws> <expr>) (at-src `(forward ,$3))]
             [(CHANGE <ws> SIZE <ws> <expr>) (at-src `(change-size ,$5))]
-            [(SLEEP <ws> <expr>) (at-src `(sleep ,$3))]
+            [(WAIT <ws> <expr>) (at-src `(sleep ,$3))]
             [(FOREVER <ws> OPEN <ws> <stmts> <ws> CLOSE) (at-src `(forever . ,$5))]
             [(IF <ws> <expr> <ws> OPEN <ws> <stmts> <ws> CLOSE) (at-src `(when ,$3 . ,$7))]
             [(WHILE <ws> <expr> <ws> OPEN <ws> <stmts> <ws> CLOSE) (at-src `(while ,$3 . ,$7))]
             [(ID <ws> ASSIGN <ws> <expr>) (at-src `(set! ,$1 ,$5))]
             [(SAY <ws> <expr>) (at-src `(say ,$3))]
+            [(SEND <ws> <expr> <ws> TO <ws> EVERYONE) (at-src `(broadcast ,$3))]
+            [(SEND <ws> <expr> <ws> TO <ws> <expr>) (at-src `(tell ,$7 ,$3))]
             [(HUSH) (at-src '(hush))])
     (<stmts> [() '()]
              [(<ws> <stmt> <stmts>) (cons $2 $3)])

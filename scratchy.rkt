@@ -21,7 +21,8 @@
 ;; The methods listed here are also exported:
 (define-syntax-rule (provide-methods)
   (provide-method move-y move-x turn-to change-size
-                  forward turn touches? say hush))
+                  forward turn touches? say hush
+                  tell broadcast))
 
 ;; ----------------------------------------
 
@@ -46,6 +47,7 @@
                      (~optional (~seq #:direction dir-expr:expr)
                                 #:defaults ([dir-expr #'90]))
                      (~seq #:key key-name:id key-expr:expr ...)
+                     (~seq #:message msg:str msg-expr:expr ...)
                      (~seq #:task task-expr:expr ...)
                      (~seq #:variable variable-name:id variable-expr:expr))
         ...)
@@ -59,6 +61,11 @@
           (key-handler
            [key-name key-expr ...]
            ...)]
+         [message-callback
+          (lambda (msg-in)
+            (cond
+             [(equal? msg-in msg) msg-expr ...]
+             ...))]
          [variable variable-name variable-expr] ...
          [task task-expr ...] ...)]))
 
@@ -90,14 +97,12 @@
 
 ;; ----------------------------------------
 
-(define task-custodian (make-custodian))
-
 (define ready-sema (make-semaphore))
 (define ready (semaphore-peek-evt ready-sema))
 
 (define (run+ l)
   (begin0
-   (run l #:on-close (lambda () (custodian-shutdown-all task-custodian)))
+   (run l)
    (semaphore-post ready-sema)))
 
 (define-syntax define-sprite/orig
