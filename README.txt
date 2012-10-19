@@ -1,3 +1,6 @@
+If you're interested in the tutorial version of this repository,
+see the "tutorial" branch in the git repository.
+
 Install this directory as a Racket collection "scratchy", perhaps by
 running
 
@@ -9,20 +12,3 @@ in the parent directory (assuming that this directory is named
  raco setup -D scratchy scribblings/main
 
 build bytecode and documentation.
-
-
-The example "fish.rkt" is a Scratchy program that you can open in
-DrRacket (since it uses inline images), and "fish-test.rkt" is the
-same program using plain text. You can run "fish.rkt" with
-
- racket fish.rkt
-
-Move the duck using the arrow keys to chase the fish and keep it in
-the blue aquarium. The fish says your current score.
-
-The programs "fish1.rkt" through "fish12.rkt" are the tutorial, ending
-with "fish.rkt" (which looks like a big jump, but it's mostly
-"parser.rkt").
-
-
-The code should run in DrRacket v5.3 and later.

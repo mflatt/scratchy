@@ -12,8 +12,12 @@
 (define draw-bounds? #f)
 (define draw-hit? #f)
 
-(define (run sprites)
-  (define f (new frame%
+(define (run sprites
+             #:on-close [do-on-close void])
+  (define f (new (class frame%
+                   (super-new)
+                   (define/augment (on-close)
+                     (do-on-close)))
                  [label "Scratchy"]
                  [width 800]
                  [height 600]))

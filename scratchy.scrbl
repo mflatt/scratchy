@@ -44,7 +44,10 @@ do
 @(define <stmt> @nonterm{stmt})
 @(define <key> @nonterm{key})
 @(define <id> @nonterm{id})
+@(define <binary-op> @nonterm{binary-op})
+@(define <binary-key-op> @nonterm{binary-key-op})
 @(define <number> @nonterm{number})
+@(define <string> @nonterm{string})
 
 Here's the grammar of this textual language:
 
@@ -62,10 +65,8 @@ Here's the grammar of this textual language:
 (list <expr> <number>
              <id>
              @nonterm{image}
-             @BNF-seq[<expr> @litchar{+} <expr>]
-             @BNF-seq[<expr> @litchar{-} <expr>]
-             @BNF-seq[<expr> @litchar{*} <expr>]
-             @BNF-seq[<expr> @litchar{/} <expr>]
+             @nonterm{string}
+             @BNF-seq[<expr> <binary-op> <expr>]
              @BNF-seq[@litchar{random} <expr>]
              @BNF-seq[@litchar{touches} <expr>])
 (list <stmt> @BNF-seq[@litchar{move} @litchar{x} <expr>]
@@ -81,10 +82,13 @@ Here's the grammar of this textual language:
              @BNF-seq[@litchar{while} <expr> @litchar["{"] @kleenestar[<stmt>] @litchar["}"]]
              @BNF-seq[@litchar{if} <expr> @litchar["{"] @kleenestar[<stmt>] @litchar["}"]]
              @BNF-seq[<id> @litchar{=} <expr>])
-(list <key> <id> @litchar{+} @litchar{-} @litchar{*} @litchar{/})
-(list <id> @elem{a sequence of letters (in @litchar{a}/@litchar{A} to @litchar{z}/@litchar{Z})}
-           @elem{@litchar["@"] followed by a sequence of letters and @litchar{-}})
+(list <binary-op> @litchar{<=} @litchar{>=} <binary-key-op>)
+(list <binary-key-op> @litchar{+} @litchar{-} @litchar{*} @litchar{/} @litchar{<} @litchar{>} @litchar{=})
+(list <key> <id> <binary-key-op>)
+(list <id> @elem{a letter (in @litchar{a}/@litchar{A} to @litchar{z}/@litchar{Z}) followed by letters and numbers}
+           @elem{@litchar["@"] followed by a sequence of letters, numbers, and @litchar{-}s})
 (list <number> @elem{a decimal number, optionally signed})
+(list <string> @elem{sequence of characters between @litchar{"}s})
 ]
 
 @; ----------------------------------------

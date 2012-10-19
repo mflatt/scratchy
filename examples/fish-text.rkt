@@ -12,6 +12,7 @@ on up key
  turn to 0
 
 on down key
+ say "down!"
  move y -10
  turn to 180
 
