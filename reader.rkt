@@ -49,6 +49,8 @@
     [(EOF) (ret 'eof #f #t)]
     [(OPEN) (ret 'parenthesis '|{|)]
     [(CLOSE) (ret 'parenthesis '|}|)]
+    [(POPEN) (ret 'parenthesis '|(|)]
+    [(PCLOSE) (ret 'parenthesis '|)|)]
     [(NUM) (ret 'constant #f)]
     [(ID) (ret 'symbol #f)]
     [(WHITESPACE) (ret 'white-space #f)]

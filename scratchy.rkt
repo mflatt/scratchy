@@ -11,9 +11,10 @@
                      syntax/parse))
 
 (provide (except-out (all-from-out racket/base)
-                     #%module-begin set!)
+                     #%module-begin set! do)
          (rename-out [module-begin #%module-begin]
-                     [checked-set! set!])
+                     [checked-set! set!]
+                     [do-keyword do])
 
          (all-from-out "images.rkt")
 
@@ -24,10 +25,17 @@
 ;; The methods listed here are also exported:
 (define-syntax-rule (provide-methods)
   (begin
-    (provide-sprite-method move-y move-x turn-to change-size
+    (provide-sprite-method move-y move-x set-x set-y
+                           turn-to change-size
                            forward turn touches? say hush
                            tell broadcast set-land)
     (provide-land-method watch)))
+
+;; The additional keywords listed here are also exported:
+(define-syntax-rule (provide-keywords)
+  (provide-keyword image is to by on x y size direction ---...-
+                   key message variable touches move change
+                   wait everyone send))
 
 ;; ----------------------------------------
 
@@ -165,6 +173,17 @@
     ...))
 
 (provide-methods)
+
+;; ----------------------------------------
+
+(define-syntax-rule (provide-keyword id ...)
+  (begin
+    (define-syntax id #f) ...
+    (provide id ...)))
+
+(define-syntax do-keyword #f)
+
+(provide-keywords)
 
 ;; ----------------------------------------
 

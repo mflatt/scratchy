@@ -17,14 +17,14 @@
 ;; Lexer
 
 (define-tokens content-tokens
-  (ID NUM BINOP BINKEYOP
+  (ID NUM BINOP BINKEYOP UNBINKEYOP
       STRING SPECIAL ERROR))
 
 (define-empty-tokens delim-tokens
-  (EOF SEP IS OPEN CLOSE ASSIGN 
+  (EOF SEP IS OPEN CLOSE POPEN PCLOSE ASSIGN 
        PLUS MINUS TIMES DIVIDE
        IMAGE MOVE X Y CHANGE SIZE
-       TURN TO ON KEY MESSAGE SEND EVERYONE SAY HUSH
+       TURN TO BY ON KEY MESSAGE SEND EVERYONE SAY HUSH
        DO FOREVER FORWARD IF WHILE WAIT
        WATCH
        RANDOM VARIABLE TOUCHES DIRECTION
@@ -32,10 +32,10 @@
 
 (define lex
   (lexer-src-pos
-   [(:seq "@" (:+ (:or #\- (:/ #\A #\Z #\a #\z #\0 #\9)))) 
+   [(:seq "@" (:+ (:or #\- #\_ #\? (:/ #\A #\Z #\a #\z #\0 #\9)))) 
     (token-ID (string->symbol (substring lexeme 1)))]
-   [(:or (:seq (:? (:or "-" "+")) (:+ (:/ "0" "9")) (:? ".") (:* (:/ "0" "9")))
-         (:seq (:? (:or "-" "+")) "." (:* (:/ "0" "9"))))
+   [(:or (:seq (:+ (:/ "0" "9")) (:? ".") (:* (:/ "0" "9")))
+         (:seq "." (:* (:/ "0" "9"))))
     (token-NUM (parameterize ([read-decimal-as-inexact #f])
                  (string->number lexeme)))]
    [(:seq "---" (:* "-")) 'SEP]
@@ -44,8 +44,11 @@
    ["is" 'IS]
    ["{" 'OPEN]
    ["}" 'CLOSE]
+   ["(" 'POPEN]
+   [")" 'PCLOSE]
    ["=" 'ASSIGN]
-   [(:or "+" "-" "*" "/" "<" ">") (token-BINKEYOP (string->symbol lexeme))]
+   [(:or "+" "-") (token-UNBINKEYOP (string->symbol lexeme))]
+   [(:or "*" "/" "<" ">") (token-BINKEYOP (string->symbol lexeme))]
    [(:or "<=" ">=") (token-BINOP (string->symbol lexeme))]
    ["image" 'IMAGE]
    ["key" 'KEY]
@@ -60,6 +63,7 @@
    ["change" 'CHANGE]
    ["turn" 'TURN]
    ["to" 'TO]
+   ["by" 'BY]
    ["on" 'ON]
    ["do" 'DO]
    ["watch" 'WATCH]
@@ -74,7 +78,9 @@
    ["hush" 'HUSH]
    ["touches" 'TOUCHES]
    ["use" 'USE]
-   [(:seq (:/ #\A #\Z #\a #\z) (:* (:/ #\A #\Z #\a #\z #\0 #\9))) (token-ID (string->symbol lexeme))]
+   [(:seq (:/ #\A #\Z #\a #\z) 
+          (:* (:or #\_ (:/ #\A #\Z #\a #\z #\0 #\9))))
+    (token-ID (string->symbol lexeme))]
    [(:+ whitespace) 'WHITESPACE]
    [(special) (token-SPECIAL lexeme)]
    [(eof) 'EOF]
@@ -121,14 +127,19 @@
             [(STRING) (at-src `(quote ,$1))]
             [(RANDOM <ws> <expr>) (at-src `(random ,$3))] 
             [(TOUCHES <ws> <expr>) (at-src `(touches? ,$3))] 
+            [(<unop> <ws> <expr>) (at-src `(,$1 ,$3))]
             [(<expr> <ws> <binop> <ws> <expr>) (at-src `(,$3 ,$1 ,$5))]
-            [(<expr> <ws> ASSIGN <ws> <expr>) (at-src `(= ,$1 ,$5))])
-    (<stmt> [(MOVE <ws> X <ws> <expr>) (at-src `(move-x ,$5))]
-            [(MOVE <ws> Y <ws> <expr>) (at-src `(move-y ,$5))]
+            [(<expr> <ws> ASSIGN <ws> <expr>) (at-src `(= ,$1 ,$5))]
+            [(POPEN <ws> <expr> <ws> PCLOSE) $3])
+    (<stmt> [(MOVE <ws> X <ws> BY <ws> <expr>) (at-src `(move-x ,$7))]
+            [(MOVE <ws> Y <ws> BY <ws> <expr>) (at-src `(move-y ,$7))]
+            [(MOVE <ws> X <ws> TO <ws> <expr>) (at-src `(set-x ,$7))]
+            [(MOVE <ws> Y <ws> TO <ws> <expr>) (at-src `(set-y ,$7))]
             [(TURN <ws> TO <ws> <expr>) (at-src `(turn-to ,$5))]
-            [(TURN <ws> <expr>) (at-src `(turn ,$3))]
-            [(FORWARD <ws> <expr>) (at-src `(forward ,$3))]
-            [(CHANGE <ws> SIZE <ws> <expr>) (at-src `(change-size ,$5))]
+            [(TURN <ws> BY <ws> <expr>) (at-src `(turn ,$5))]
+            [(FORWARD <ws> BY <ws> <expr>) (at-src `(forward ,$5))]
+            [(CHANGE <ws> SIZE <ws> BY <ws> <expr>) (at-src `(change-size ,$7))]
+            [(CHANGE <ws> SIZE <ws> TO <ws> <expr>) (at-src `(set-size ,$7))]
             [(WAIT <ws> <expr>) (at-src `(sleep ,$3))]
             [(FOREVER <ws> OPEN <ws> <stmts> <ws> CLOSE) (at-src `(forever . ,$5))]
             [(IF <ws> <expr> <ws> OPEN <ws> <stmts> <ws> CLOSE) (at-src `(when ,$3 . ,$7))]
@@ -143,12 +154,15 @@
     (<stmts> [() '()]
              [(<ws> <stmt> <stmts>) (cons $2 $3)])
     (<binop> [(BINOP) $1]
-             [(BINKEYOP) $1])
+             [(BINKEYOP) $1]
+             [(UNBINKEYOP) $1])
+    (<unop> [(UNBINKEYOP) $1])
     (<key> [(ID) $1]
            [(X) (at-src 'x)]
            [(Y) (at-src 'y)]
            [(ASSIGN) (at-src '=)]
-           [(BINKEYOP) $1])
+           [(BINKEYOP) $1]
+           [(UNBINKEYOP) $1])
     (<ws> [() #f]
           [(WHITESPACE) #f]))))
 

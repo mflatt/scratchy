@@ -1,15 +1,22 @@
 #lang scribble/manual
-@(require (for-label racket/base
+@(require (for-label (except-in racket/base do random if)
                      racket/contract/base
-                     racket/class
-                     scratchy/runtime)
+                     (except-in racket/class send)
+                     scratchy/runtime
+                     (only-in scratchy 
+                              use image is to by x y
+                              size direction on key message
+                              variable do random touches
+                              move turn forward change
+                              wait say hush send everyone
+                              watch forever while if))
           scribble/bnf)
 
 @title{Scratchy: A Scratch-like Toy}
 
 Scratchy provides a @link["http://scratch.mit.edu"]{Scratch}-like
 runtime environment plus a simple textual programming language. It was
-originally developed as an example for creating language in Racket.
+developed as an example of creating a language in Racket.
 
 @table-of-contents[]
 
@@ -20,6 +27,8 @@ originally developed as an example for creating language in Racket.
 @defmodulelang[scratchy]
 
 Here's a program for a fish that swims randomly:
+
+@subsection{Example}
 
 @codeblock|{
 #lang scratchy
@@ -32,71 +41,217 @@ image is @fish-image
 do
  forever {
    wait 0.02
-   forward 2
-   turn random 5 - 2
+   forward by 2
+   turn by (random 5) - 2
  }
 }|
+
+The @racket[---...-] starts a sprite declaration, where the
+sprite is named @racket[fish]. In addition, if the file name is
+@filepath{fish-land.rkt}, then @racket[fish-land] is defined as the
+land where @racket[fish] starts.
+
+@subsection{Grammar}
 
 @(define <prog> @nonterm{prog})
 @(define <use> @nonterm{use})
 @(define <sprite> @nonterm{sprite})
 @(define <clause> @nonterm{clause})
-@(define <expr> @nonterm{expr})
-@(define <stmt> @nonterm{stmt})
+@(define <expression> @nonterm{expr})
+@(define <statement> @nonterm{statement})
 @(define <key> @nonterm{key})
 @(define <id> @nonterm{id})
 @(define <binary-op> @nonterm{binary-op})
-@(define <binary-key-op> @nonterm{binary-key-op})
+@(define <unary-op> @nonterm{unary-op})
 @(define <number> @nonterm{number})
 @(define <string> @nonterm{string})
 
-Here's the grammar of this textual language:
+Here's the grammar of this textual language (click on a keyword for more information):
 
 @BNF[
 (list <prog> @BNF-seq[@kleenestar[<use>] @kleenestar[<sprite>]])
-(list <use> @BNF-seq[@litchar{use} <id>])
-(list <sprite> @BNF-seq[@elem{@litchar{---}...@litchar{-}} <id> @kleenestar[<clause>]])
-(list <clause> @BNF-seq[@litchar{image} @litchar{is} <expr>]
-               @BNF-seq[@litchar{x} @litchar{is} <expr>]
-               @BNF-seq[@litchar{y} @litchar{is} <expr>]
-               @BNF-seq[@litchar{size} @litchar{is} <expr>]
-               @BNF-seq[@litchar{direction} @litchar{is} <expr>]
-               @BNF-seq[@litchar{on} <key> @litchar{key} @kleenestar[<stmt>]]
-               @BNF-seq[@litchar{on} <string> @litchar{message} @kleenestar[<stmt>]]
-               @BNF-seq[@litchar{variable} <id> @litchar{is} <expr>]
-               @BNF-seq[@litchar{do} @kleenestar[<stmt>]])
-(list <expr> <number>
+(list <use> @BNF-seq[@racket[use] <id>])
+(list <sprite> @BNF-seq[@racket[---...-] <id> @kleenestar[<clause>]])
+(list <clause> @BNF-seq[@racket[image] @racket[is] <expression>]
+               @BNF-seq[@racket[x] @racket[is] <expression>]
+               @BNF-seq[@racket[y] @racket[is] <expression>]
+               @BNF-seq[@racket[size] @racket[is] <expression>]
+               @BNF-seq[@racket[direction] @racket[is] <expression>]
+               @BNF-seq[@racket[on] <key> @racket[key] @kleenestar[<statement>]]
+               @BNF-seq[@racket[on] <string> @racket[message] @kleenestar[<statement>]]
+               @BNF-seq[@racket[variable] <id> @racket[is] <expression>]
+               @BNF-seq[@racket[do] @kleenestar[<statement>]])
+(list <expression> @BNF-alt[<number> @nonterm{image} @nonterm{string}]
              <id>
-             @nonterm{image}
-             @nonterm{string}
-             @BNF-seq[<expr> <binary-op> <expr>]
-             @BNF-seq[@litchar{random} <expr>]
-             @BNF-seq[@litchar{touches} <expr>])
-(list <stmt> @BNF-seq[@litchar{move} @litchar{x} <expr>]
-             @BNF-seq[@litchar{move} @litchar{y} <expr>]
-             @BNF-seq[@litchar{turn} @litchar{to} <expr>]
-             @BNF-seq[@litchar{turn} <expr>]
-             @BNF-seq[@litchar{forward} <expr>]
-             @BNF-seq[@litchar{change} @litchar{size} <expr>]
-             @BNF-seq[@litchar{wait} <expr>]
-             @BNF-seq[@litchar{say} <expr>]
-             @BNF-seq[@litchar{hush}]
-             @BNF-seq[@litchar{send} <expr> @litchar{to} <expr>]
-             @BNF-seq[@litchar{send} <expr> @litchar{to} @litchar{everyone}]
-             @BNF-seq[@litchar{watch} <expr>]
-             @BNF-seq[@litchar{move} @litchar{to} <expr>]
-             @BNF-seq[@litchar{forever} @litchar["{"] @kleenestar[<stmt>] @litchar["}"]]
-             @BNF-seq[@litchar{while} <expr> @litchar["{"] @kleenestar[<stmt>] @litchar["}"]]
-             @BNF-seq[@litchar{if} <expr> @litchar["{"] @kleenestar[<stmt>] @litchar["}"]]
-             @BNF-seq[<id> @litchar{=} <expr>])
-(list <binary-op> @litchar{<=} @litchar{>=} <binary-key-op>)
-(list <binary-key-op> @litchar{+} @litchar{-} @litchar{*} @litchar{/} @litchar{<} @litchar{>} @litchar{=})
-(list <key> <id> <binary-key-op>)
-(list <id> @elem{a letter (in @litchar{a}/@litchar{A} to @litchar{z}/@litchar{Z}) followed by letters and numbers}
-           @elem{@litchar["@"] followed by a sequence of letters, numbers, and @litchar{-}s})
-(list <number> @elem{a decimal number, optionally signed})
+             @BNF-seq[<expression> <binary-op> <expression>]
+             @BNF-seq[<unary-op> <expression>]
+             @BNF-seq[@racket[random] <expression>]
+             @BNF-seq[@racket[touches] <expression>]
+             @BNF-seq[@litchar{(} <expression> @litchar{)}])
+(list <statement> @BNF-seq[@racket[move] @racket[x] @racket[by] <expression>]
+             @BNF-seq[@racket[move] @racket[y] @racket[by] <expression>]
+             @BNF-seq[@racket[move] @racket[x] @racket[to] <expression>]
+             @BNF-seq[@racket[move] @racket[y] @racket[to] <expression>]
+             @BNF-seq[@racket[turn] @racket[by] <expression>]
+             @BNF-seq[@racket[turn] @racket[to] <expression>]
+             @BNF-seq[@racket[forward] @racket[by] <expression>]
+             @BNF-seq[@racket[change] @racket[size] @racket[by] <expression>]
+             @BNF-seq[@racket[change] @racket[size] @racket[to] <expression>]
+             @BNF-seq[@racket[wait] <expression>]
+             @BNF-seq[@racket[say] <expression>]
+             @BNF-seq[@racket[hush]]
+             @BNF-seq[@racket[send] <expression> @racket[to] <expression>]
+             @BNF-seq[@racket[send] <expression> @racket[to] @racket[everyone]]
+             @BNF-seq[@racket[watch] <expression>]
+             @BNF-seq[@racket[move] @racket[to] <expression>]
+             @BNF-seq[@racket[forever] @litchar["{"] @kleenestar[<statement>] @litchar["}"]]
+             @BNF-seq[@racket[while] <expression> @litchar["{"] @kleenestar[<statement>] @litchar["}"]]
+             @BNF-seq[@racket[if] <expression> @litchar["{"] @kleenestar[<statement>] @litchar["}"]]
+             @BNF-seq[<id> @litchar{=} <expression>])
+(list <unary-op> @litchar{-} @litchar{+})
+(list <binary-op> @BNF-alt[@litchar{+} @litchar{-} @litchar{*} @litchar{/} @litchar{<} @litchar{>} @litchar{<=} @litchar{>=} @litchar{=}])
+(list <key> @BNF-alt[<id> @litchar{+} @litchar{-} @litchar{*} @litchar{/} @litchar{<} @litchar{>} @litchar{=}])
+(list <id> @elem{a letter (in @litchar{a}/@litchar{A} to @litchar{z}/@litchar{Z}) followed by letters, numbers, and @litchar{_}s}
+           @elem{@litchar["@"] followed by a sequence of letters, numbers, @litchar{_}s, and @litchar{-}s})
+(list <number> @elem{a decimal number})
 (list <string> @elem{sequence of characters between @litchar{"}s})
 ]
+
+@subsection{Syntactic Forms}
+
+@defform[#:id use (code:line use @#,<id>)]{
+Imports the sprite, variable, and land name of a land defined in the file
+whose name matches @<id> with a @filepath{.rkt} suffix.
+}
+
+@defidform[---...-]{
+Starts a sprite declaration. Any number of @litchar{-}s can appear, as long as
+there are at least three.}
+
+@defform[#:id image #:literals (is) (code:line image is @#,<expression>)]{
+
+Determines the initial image for a sprite.}
+
+@deftogether[(
+@defform[#:id x #:literals (is) (code:line x is @#,<expression>)]
+@defform[#:id y #:literals (is) (code:line y is @#,<expression>)]
+)]{
+
+Determines the initial placement of a sprite.}
+
+@defform[#:id size #:literals (is) (code:line size is @#,<expression>)]{
+
+Determines the initial size of a sprite, as a multiple of its image's size.}
+
+@defform[#:id direction #:literals (is) (code:line direction is @#,<expression>)]{
+
+Determines the initial direction of a sprite, in degrees where 0 is north,
+90 is east, 180 is south, and 270 is west.}
+
+@defform*[#:id on #:literals (key message) 
+          [(code:line on @#,<key> key @#,kleenestar[<statement>])
+           (code:line on @#,<string> message @#,kleenestar[<statement>])]]{
+Declares actions to take when a key is pressed or a message is sent or broadcast.}
+
+@defform[#:id variable #:literals (is) (code:line variable @#,<id> is @#,<expression>)]{
+
+Declares a variable, which is visible in the whole land.}
+
+@defform[#:id do #:literals (is) (code:line do @#,kleenestar[<statement>])]{
+
+Starts a concurrent task.}
+
+@defform[#:id random (code:line random @#,<expression>)]{
+
+Generates a random number between 0 and one less than the integer produced by @|<expression>|.}
+
+@defform[#:id touches (code:line touches @#,<expression>)]{
+
+Produces true if this sprite is touching the one named by @|<expression>|.}
+
+@defform*[#:id turn #:literals (to by)
+          [(code:line turn by @#,<expression>)
+           (code:line turn to @#,<expression>)]]{
+
+Changes the sprite's direction either @racket[by] a number of degrees
+clockwise or @racket[to] a number of degrees like @racket[direction].}
+
+@defform*[#:id move #:literals (x y to by)
+          [(code:line move x by @#,<expression>)
+           (code:line move y by @#,<expression>)
+           (code:line move x to @#,<expression>)
+           (code:line move y to @#,<expression>)
+           (code:line move to @#,<expression>)]]{
+
+Changes the sprite's @racket[x] or @racket[y] location either
+@racket[by] a number of pixels left/up or @racket[to] a number of
+pixels from the screen's center. If neither @racket[x] or @racket[y]
+is indicated, the sprite instead moves to the specified @tech{land}
+(keeping its relative position from the current land).}
+
+
+@defform[#:id forward #:literals (by) (code:line forward by @#,<expression>)]{
+
+Moves the sprite in its current direction by the specified number of pixels.}
+
+
+@defform*[#:id change #:literals (size to by)
+          [(code:line change size by @#,<expression>)
+           (code:line change size to @#,<expression>)]]{
+
+Changes the sprite's size either @racket[by] an amount to add to
+its current size multiplier or @racket[to] a multiple of its image's size.}
+
+
+@defform[#:id wait (code:line wait @#,<expression>)]{
+
+Pauses a task for the specified number of seconds.}
+
+@defform[#:id say (code:line say @#,<expression>)]{
+
+Causes the sprite to have a speech bubble with the specified content.}
+
+@defidform[hush]{
+
+Removes the sprite's speech bubble, if any.}
+
+
+@defform*[#:id send #:literals (to everyone)
+          [(code:line send @#,<expression> to @#,<expression>)
+           (code:line send @#,<expression> to everyone)]]{
+
+Sends a message to a specific sprite or to all sprites in the @tech{land}.
+A sprite can respond to the message using an
+@racket[on @#,<string> message] clause.}
+
+@defform[#:id watch (code:line watch @#,<expression>)]{
+
+Switches the Scratchy view to the specified @tech{land}.}
+
+@defform[#:id forever 
+         (code:line forever @#,litchar["{"] @#,kleenestar[<statement>] @#,litchar["}"])]{
+
+Repeats the @|<statement>|s forever.}
+
+@defform[#:id while
+         (code:line while @#,<expression> @#,litchar["{"] @#,kleenestar[<statement>] @#,litchar["}"])]{
+
+Repeats the @|<statement>|s as long as @<expression> produces true.}
+
+@defform[#:id if
+         (code:line if @#,<expression> @#,litchar["{"] @#,kleenestar[<statement>] @#,litchar["}"])]{
+
+Performs the @|<statement>|s only if @<expression> produces true.}
+
+@deftogether[(
+@defidform[is]
+@defidform[to]
+@defidform[by]
+@defidform[key]
+@defidform[message]
+@defidform[everyone]
+)]{
+Keywords that are combined with many others.}
 
 @; ----------------------------------------
 
