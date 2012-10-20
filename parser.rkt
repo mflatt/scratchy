@@ -34,7 +34,8 @@
   (lexer-src-pos
    [(:seq "@" (:+ (:or #\- (:/ #\A #\Z #\a #\z #\0 #\9)))) 
     (token-ID (string->symbol (substring lexeme 1)))]
-   [(:seq (:? (:or "-" "+")) (:+ (:/ "0" "9")) (:? ".") (:* (:/ "0" "9")))
+   [(:or (:seq (:? (:or "-" "+")) (:+ (:/ "0" "9")) (:? ".") (:* (:/ "0" "9")))
+         (:seq (:? (:or "-" "+")) "." (:* (:/ "0" "9"))))
     (token-NUM (parameterize ([read-decimal-as-inexact #f])
                  (string->number lexeme)))]
    [(:seq "---" (:* "-")) 'SEP]
