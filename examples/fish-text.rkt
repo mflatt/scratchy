@@ -1,5 +1,7 @@
 #lang scratchy
 
+use splash
+
 ----------------------------------------
 duck
 
@@ -37,6 +39,10 @@ on "hit" message
 
 on "gone" message
  hush
+
+on x key 
+ move to splash
+ watch splash
 
 -------------------------------------
 fish

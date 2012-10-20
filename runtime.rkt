@@ -7,6 +7,7 @@
          slideshow/balloon)
 
 (provide run
+         land%
          sprite%
          task-custodian)
 
@@ -18,8 +19,10 @@
   (parameterize ([current-custodian task-custodian])
     (thread thunk)))
 
-(define (run sprites
+(define (run land
              #:on-close [do-on-close void])
+  (define lands (for/list ([k (in-hash-keys (send land get-lands (hasheq land #t)))])
+                  k))
   (define f (new (class frame%
                    (super-new)
                    (define/augment (on-close)
@@ -34,7 +37,7 @@
                               [paint-callback
                                (lambda (c dc)
                                  (define-values (w h) (get-client-size))
-                                 (for ([sprite (in-list sprites)])
+                                 (for ([sprite (in-list (send land get-sprites))])
                                    (send sprite draw dc w h)
                                    (when draw-bounds?
                                      (define-values (x1 y1 x2 y2) (send sprite bounding-box))
@@ -49,7 +52,7 @@
                      (define key (if down?
                                      code
                                      (send e get-key-release-code)))
-                     (for ([sprite (in-list sprites)])
+                     (for ([sprite (in-list (send land get-sprites))])
                        (send sprite key down? key))
                      (refresh))
 
@@ -62,15 +65,16 @@
                        (define-values (w h) (send c get-client-size))
                        (define x (- (send e get-x) (quotient w 2)))
                        (define y (- (send e get-y) (quotient h 2)))
-                       (for/or ([sprite (in-list (reverse sprites))])
-                         (and (send sprite hits? x y)
+                       (for/or ([sprite (in-list (reverse (send land get-sprites)))])
+                         (and (eq? land (send sprite get-land))
+                              (send sprite hits? x y)
                               (begin
                                 (send sprite mouse down? x y)
                                 #t)))
                        (refresh))))))
 
-  (for ([sprite (in-list sprites)])
-    (send sprite set-others sprites))
+  (for ([land (in-list lands)])
+    (send land set-others lands))
 
   (task-thread (lambda ()
                  (let loop ()
@@ -79,8 +83,17 @@
                    (queue-callback
                     (lambda ()
                       (define-values (w h) (send c get-client-size))
-                      (when (for/fold ([update? #f]) ([sprite (in-list sprites)])
-                              (or (send sprite tick w h)
+                      (set! land (let-values ([(l t)
+                                               (for/fold ([new-land land] [time 0]) ([l (in-list lands)])
+                                                 (define t (send l check-show))
+                                                 (if (and t (t . > . time))
+                                                     (values l t)
+                                                     (values new-land time)))])
+                                   l))
+                      (when (for*/fold ([update? #f]) ([l (in-list lands)]
+                                                       [sprite (in-list (send l get-sprites))])
+                              (or (and (send sprite tick w h)
+                                       (eq? land l))
                                   update?))
                         (send c refresh))
                       (semaphore-post continue)))
@@ -89,11 +102,63 @@
   
   (send f show #t))
 
+(define-syntax-rule (as-event e ...)
+  (call-as-event (lambda () e ...)))
+
+(define (call-as-event thunk)
+  (define t (current-thread))
+  (if (eq? t handler-thread)
+      (thunk)
+      (begin
+        (queue-callback (lambda () 
+                          (thread-send t (thunk))))
+        (thread-receive))))
+
+
 (define handler-thread (eventspace-handler-thread (current-eventspace)))
+
+(define land%
+  (class object%
+    (super-new)
+
+    (init [(get-lands-callback get-lands)])
+
+    (define sprites null)
+
+    (define/public (add-sprite s)
+      (set! sprites (cons s sprites)))
+
+    (define/public (remove-sprite s)
+      (set! sprites (remove s sprites)))
+
+    (define/public (get-sprites) sprites)
+
+    (define on-get-lands get-lands-callback)
+    (define/public (get-lands ht)
+      (define lands (on-get-lands))
+      (for/fold ([ht ht]) ([l (in-list lands)])
+        (if (hash-ref ht l #f)
+            ht
+            (send l get-lands (hash-set ht l #t)))))
+
+    (define others null)
+    (define/public (set-others other-lands)
+      (set! others other-lands))
+
+    (define wants-show #f)
+    (define/public (watch)
+      (as-event
+       (set! wants-show (current-inexact-milliseconds))))
+    (define/public (check-show)
+      (and wants-show
+           (begin0
+            wants-show
+            (set! wants-show #f))))))
 
 (define sprite%
   (class object%
-    (init image
+    (init [(init-land land)]
+          image
           [(init-x x) 0]
           [(init-y y) 0]
           [(init-s size) 1]
@@ -102,23 +167,15 @@
           [mouse-callback void]
           [message-callback void])
 
+    (define land init-land)
+    (send land add-sprite this)
+
     (define on-key key-callback)
     (define on-mouse mouse-callback)
     (define on-message message-callback)
 
-    (define-syntax-rule (as-event e ...)
-      (call-as-event (lambda () e ...)))
     (define-syntax-rule (as-modify-event e ...)
       (as-event e ... (set! modified? #t)))
-
-    (define/private (call-as-event thunk)
-      (define t (current-thread))
-      (if (eq? t handler-thread)
-          (thunk)
-          (begin
-            (queue-callback (lambda () 
-                              (thread-send t (thunk))))
-            (thread-receive))))
 
     (define bm (read-bitmap (open-input-bytes (convert image 'png-bytes))))
     (define w (send bm get-width))
@@ -320,6 +377,7 @@
       (as-event 
        (and visible?
             (send other is-visible?)
+            (eq? land (send other get-land))
             (if ((points-to-test) . < . (send other points-to-test))
                 (touches?/i other)
                 (send other touches?/i this)))))
@@ -359,10 +417,17 @@
     (define/public (tell other m)
       (send other message m))
 
-    (define others null)
-    (define/public (set-others l) (set! others l))
     (define/public (broadcast m)
-      (for ([other (in-list others)])
-        (send other message m)))
+      (as-event
+       (for ([other (in-list (send land get-sprites))])
+         (send other message m))))
+
+    (define/public (get-land) land)
+
+    (define/public (set-land l) 
+      (as-modify-event
+       (send land remove-sprite this)
+       (set! land l)
+       (send land add-sprite this)))
     
     (super-new)))

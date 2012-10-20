@@ -26,8 +26,9 @@
        IMAGE MOVE X Y CHANGE SIZE
        TURN TO ON KEY MESSAGE SEND EVERYONE SAY HUSH
        DO FOREVER FORWARD IF WHILE WAIT
+       WATCH
        RANDOM VARIABLE TOUCHES DIRECTION
-       WHITESPACE))
+       USE WHITESPACE))
 
 (define lex
   (lexer-src-pos
@@ -60,6 +61,7 @@
    ["to" 'TO]
    ["on" 'ON]
    ["do" 'DO]
+   ["watch" 'WATCH]
    ["forever" 'FOREVER]
    ["forward" 'FORWARD]
    ["if" 'IF]
@@ -70,6 +72,7 @@
    ["say" 'SAY]
    ["hush" 'HUSH]
    ["touches" 'TOUCHES]
+   ["use" 'USE]
    [(:seq (:/ #\A #\Z #\a #\z) (:* (:/ #\A #\Z #\a #\z #\0 #\9))) (token-ID (string->symbol lexeme))]
    [(:+ whitespace) 'WHITESPACE]
    [(special) (token-SPECIAL lexeme)]
@@ -87,8 +90,11 @@
             (raise-parse-error t v start end)))
    (src-pos)
    (grammar
-    (<prog> [(<ws>) null]
-            [(<ws> <sprite> <prog>) (cons $2 $3)])
+    (<prog> [(<uses> <sprites>) (append $1 $2)])
+    (<uses> [(<ws>) null]
+            [(<ws> USE <ws> ID <uses>) (cons (at-src `(use ,$4)) $5)])
+    (<sprites> [(<ws>) null]
+               [(<ws> <sprite> <sprites>) (cons $2 $3)])
     (<sprite> [(SEP <ws> ID <clauses>) 
                (at-src `(define-sprite ,$3 . ,$4))])
     (<clauses> [(<ws>) null]
@@ -128,14 +134,18 @@
             [(WHILE <ws> <expr> <ws> OPEN <ws> <stmts> <ws> CLOSE) (at-src `(while ,$3 . ,$7))]
             [(ID <ws> ASSIGN <ws> <expr>) (at-src `(set! ,$1 ,$5))]
             [(SAY <ws> <expr>) (at-src `(say ,$3))]
+            [(HUSH) (at-src '(hush))]
             [(SEND <ws> <expr> <ws> TO <ws> EVERYONE) (at-src `(broadcast ,$3))]
             [(SEND <ws> <expr> <ws> TO <ws> <expr>) (at-src `(tell ,$7 ,$3))]
-            [(HUSH) (at-src '(hush))])
+            [(MOVE <ws> TO <ws> <expr>) (at-src `(set-land ,$5))]
+            [(WATCH <ws> <expr>) (at-src `(watch ,$3))])
     (<stmts> [() '()]
              [(<ws> <stmt> <stmts>) (cons $2 $3)])
     (<binop> [(BINOP) $1]
              [(BINKEYOP) $1])
     (<key> [(ID) $1]
+           [(X) (at-src 'x)]
+           [(Y) (at-src 'y)]
            [(ASSIGN) (at-src '=)]
            [(BINKEYOP) $1])
     (<ws> [() #f]

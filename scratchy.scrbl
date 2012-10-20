@@ -38,6 +38,7 @@ do
 }|
 
 @(define <prog> @nonterm{prog})
+@(define <use> @nonterm{use})
 @(define <sprite> @nonterm{sprite})
 @(define <clause> @nonterm{clause})
 @(define <expr> @nonterm{expr})
@@ -52,8 +53,9 @@ do
 Here's the grammar of this textual language:
 
 @BNF[
-(list <prog> @kleenestar[<sprite>])
-(list <sprite> @BNF-seq[@elem{@litchar{---}...@litchar{---}} <id> @kleenestar[<clause>]])
+(list <prog> @BNF-seq[@kleenestar[<use>] @kleenestar[<sprite>]])
+(list <use> @BNF-seq[@litchar{use} <id>])
+(list <sprite> @BNF-seq[@elem{@litchar{---}...@litchar{-}} <id> @kleenestar[<clause>]])
 (list <clause> @BNF-seq[@litchar{image} @litchar{is} <expr>]
                @BNF-seq[@litchar{x} @litchar{is} <expr>]
                @BNF-seq[@litchar{y} @litchar{is} <expr>]
@@ -81,6 +83,8 @@ Here's the grammar of this textual language:
              @BNF-seq[@litchar{hush}]
              @BNF-seq[@litchar{send} <expr> @litchar{to} <expr>]
              @BNF-seq[@litchar{send} <expr> @litchar{to} @litchar{everyone}]
+             @BNF-seq[@litchar{watch} <expr>]
+             @BNF-seq[@litchar{move} @litchar{to} <expr>]
              @BNF-seq[@litchar{forever} @litchar["{"] @kleenestar[<stmt>] @litchar["}"]]
              @BNF-seq[@litchar{while} <expr> @litchar["{"] @kleenestar[<stmt>] @litchar["}"]]
              @BNF-seq[@litchar{if} <expr> @litchar["{"] @kleenestar[<stmt>] @litchar["}"]]
@@ -100,10 +104,34 @@ Here's the grammar of this textual language:
 
 @defmodule[scratchy/runtime]
 
-@defproc[(run [sprites (listof (is-a?/c sprite%))]) void?]{
+@defproc[(run [land land%]) void?]{
 
-Runs a Scratchy program, given @tech{sprites} that are drawn first to last
-(so the last sprite is drawn over all others, for example).}
+Runs a Scratchy program given a starting @tech{land}. The
+ @tech{sprites} in the land are drawn last to first in the order of
+ addition to the land (so the last added sprite is drawn under all
+ others, for example).}
+
+@; ----------------
+
+@defclass[land% object% ()]{
+
+A @deftech{land} that holds @tech{sprites} and connections to other
+lands.  One land is displayed at a time, and the displayed land can be
+changed with the @method[land% watch] method.
+
+@defconstructor[([get-lands (-> (listof (is-a?/c land%)))])]{
+
+Creates a @tech{land}, given a procedure that gets connected
+@tech{lands} when the Scratchy program starts. The @racket[get-lands]
+callbacks for different lands can include each land in the other's
+lists.  The lands available in the Scratchy world include the all
+of the lands reachable from the one given to @racket[run].}
+
+@defmethod[(watch) void?]{
+
+Switches the Scratchy world view to this land.}}
+
+@; ----------------
 
 @defclass[sprite% object% ()]{
 
@@ -116,14 +144,15 @@ and positive Y-values correspond to north), a scale, an orientation
 The sprite's public methods are all thread safe, and they work by
 synchronizing with the eventspace in which Scratchy is run.
 
-@defconstructor[([image convertible?]
+@defconstructor[([land (is-a?/c land%)]
+                 [image convertible?]
                  [x real? 0]
                  [y real? 0]
                  [key-callback (boolean? (or/c symbol? char?) . -> . any) void]
                  [mouse-callback (boolean? real? real? . -> . any) void]
                  [message-callback (any/c . -> . any) void])]{
 
-Creates a @tech{sprite}.
+Creates a @tech{sprite} that is initially in @racket[land].
 
 The @racket[key-callback] function is called in a fresh thread for any
 key press or release in the Scratchy world, where the initial boolean
@@ -134,7 +163,7 @@ The @racket[mouse-callback] function is called in a fresh thread for a
 mouse click on the sprite.
 
 The @racket[message-callback] function is called in a fresh thread for a
-@method[sprite% message] call to the sprite.}
+@method[sprite% tell] or @method[sprite% broadcast] call.}
 
 @defmethod[(forward [steps real?]) void?]{
 
@@ -193,8 +222,23 @@ Sets the sprite's speech balloon to show @racket[v].}
 
 Removes the sprite's speech balloon, if any.}
 
-@defmethod[(message [v any/c]) void?]{
+@defmethod[(tell [s (is-a?/c other-sprite)] [v any/c]) void?]{
 
-Calls the sprite's message callback.}
+Calls @racket[other-sprite]'s message callback with @racket[v] in a
+new thread.}
+
+@defmethod[(broadcast [v any/c]) void?]{
+
+For every @tech{sprite} in the same @tech{land}, calls the sprite's
+message callback with @racket[v] in a new thread.}
+
+@defmethod[(get-land) (is-a?/c land%)]{
+
+Returns the sprite's @tech{land}.}
+
+@defmethod[(set-land [land (is-a?/c land%)]) void?]{
+
+Returns the sprite's @tech{land} to @racket[land], removing the sprite
+from its current @tech{land}.}
 
 }
