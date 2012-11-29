@@ -9,6 +9,6 @@ running
 in the parent directory (assuming that this directory is named
 "scratchy") and then
 
- raco setup -D scratchy scribblings/main
+ raco setup scratchy scribblings/main
 
 build bytecode and documentation.
