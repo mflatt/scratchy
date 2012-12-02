@@ -25,6 +25,7 @@
        PLUS MINUS TIMES DIVIDE
        IMAGE MOVE X Y CHANGE SIZE
        TURN TO BY ON KEY MESSAGE SEND EVERYONE SAY HUSH
+       HIDE SHOW
        DO FOREVER FORWARD IF WHILE WAIT
        WATCH
        RANDOM VARIABLE TOUCHES DIRECTION
@@ -76,6 +77,8 @@
    ["wait" 'WAIT]
    ["say" 'SAY]
    ["hush" 'HUSH]
+   ["hide" 'HIDE]
+   ["show" 'SHOW]
    ["touches" 'TOUCHES]
    ["use" 'USE]
    [(:seq (:/ #\A #\Z #\a #\z) 
@@ -146,7 +149,11 @@
             [(WHILE <ws> <expr> <ws> OPEN <ws> <stmts> <ws> CLOSE) (at-src `(while ,$3 . ,$7))]
             [(ID <ws> ASSIGN <ws> <expr>) (at-src `(set! ,$1 ,$5))]
             [(SAY <ws> <expr>) (at-src `(say ,$3))]
-            [(HUSH) (at-src '(hush))]
+            [(HUSH) (at-src `(hush))]
+            [(HIDE) (at-src '(hide))]
+            [(SHOW) (at-src '(show))]
+            [(CHANGE <ws> IMAGE <ws> TO <ws> <expr>) (at-src `(set-image ,$7))]
+            [(SAY <ws> <expr>) (at-src `(say ,$3))]
             [(SEND <ws> <expr> <ws> TO <ws> EVERYONE) (at-src `(broadcast ,$3))]
             [(SEND <ws> <expr> <ws> TO <ws> <expr>) (at-src `(tell ,$7 ,$3))]
             [(MOVE <ws> TO <ws> <expr>) (at-src `(set-land ,$5))]

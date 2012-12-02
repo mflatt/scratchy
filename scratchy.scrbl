@@ -9,7 +9,8 @@
                               variable do random touches
                               move turn forward change
                               wait say hush send everyone
-                              watch forever while if))
+                              watch forever while if
+                              hide show))
           scribble/bnf)
 
 @title{Scratchy: A Scratch-like Toy}
@@ -100,6 +101,9 @@ Here's the grammar of this textual language (click on a keyword for more informa
              @BNF-seq[@racket[wait] <expression>]
              @BNF-seq[@racket[say] <expression>]
              @BNF-seq[@racket[hush]]
+             @BNF-seq[@racket[hide]]
+             @BNF-seq[@racket[show]]
+             @BNF-seq[@racket[change] @racket[image] @racket[to] <expression>]
              @BNF-seq[@racket[send] <expression> @racket[to] <expression>]
              @BNF-seq[@racket[send] <expression> @racket[to] @racket[everyone]]
              @BNF-seq[@racket[watch] <expression>]
@@ -195,12 +199,14 @@ is indicated, the sprite instead moves to the specified @tech{land}
 Moves the sprite in its current direction by the specified number of pixels.}
 
 
-@defform*[#:id change #:literals (size to by)
+@defform*[#:id change #:literals (size image to by)
           [(code:line change size by @#,<expression>)
-           (code:line change size to @#,<expression>)]]{
+           (code:line change size to @#,<expression>)
+           (code:line change image to @#,<expression>)]]{
 
 Changes the sprite's size either @racket[by] an amount to add to
-its current size multiplier or @racket[to] a multiple of its image's size.}
+its current size multiplier or @racket[to] a multiple of its image's size,
+or sets the sprite image to a new image.}
 
 
 @defform[#:id wait (code:line wait @#,<expression>)]{
@@ -214,6 +220,13 @@ Causes the sprite to have a speech bubble with the specified content.}
 @defidform[hush]{
 
 Removes the sprite's speech bubble, if any.}
+
+@deftogether[(
+@defidform[hide]
+@defidform[show]
+)]{
+
+Hides or shows the sprite.}
 
 
 @defform*[#:id send #:literals (to everyone)
@@ -368,6 +381,10 @@ Makes the sprite visible.}
 @defmethod[(hide) void?]{
 
 Makes the sprite invisible.}
+
+@defmethod[(set-image [image convertible?]) void?]{
+
+Sets the sprite's image.}
 
 @defmethod[(say [v any/c]) void?]{
 

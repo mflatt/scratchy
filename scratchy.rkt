@@ -26,8 +26,9 @@
 (define-syntax-rule (provide-methods)
   (begin
     (provide-sprite-method move-y move-x set-x set-y
-                           turn-to change-size
+                           turn-to change-size set-image
                            forward turn touches? say hush
+                           show hide
                            tell broadcast set-land)
     (provide-land-method watch)))
 

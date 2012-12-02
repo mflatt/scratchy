@@ -180,24 +180,38 @@
     (define-syntax-rule (as-modify-event e ...)
       (as-event e ... (set! modified? #t)))
 
-    (define bm (read-bitmap (open-input-bytes (convert image 'png-bytes))))
-    (define w (send bm get-width))
-    (define h (send bm get-height))
+    (define bm (make-bitmap 1 1))
 
+    (define w 1)
+    (define h 1)
     (define w/2 (* w 0.5))
     (define h/2 (* h 0.5))
     (define -w/2 (* w -0.5))
     (define -h/2 (* h -0.5))
-
-    (define argb (make-bytes (* w h 4)))
-    (send bm get-argb-pixels 0 0 w h argb)
-
-    (define solid-pixels
-      (for*/list ([i (in-range w)]
-                  [j (in-range h)]
-                  #:when (positive? (bytes-ref argb (* 4 (+ i (* j w))))))
-        (cons i j)))
+    (define argb #"\0\0\0\0")
+    (define solid-pixels null)
     (define num-solid-pixels (length solid-pixels))
+
+    (define/private (reset-bm! new-bm)
+      (set! bm new-bm)
+      (set! w (send new-bm get-width))
+      (set! h (send new-bm get-height))
+      
+      (set! w/2 (* w 0.5))
+      (set! h/2 (* h 0.5))
+      (set! -w/2 (* w -0.5))
+      (set! -h/2 (* h -0.5))
+
+      (set! argb (make-bytes (* w h 4)))
+      (send new-bm get-argb-pixels 0 0 w h argb)
+
+      (set! solid-pixels
+            (for*/list ([i (in-range w)]
+                        [j (in-range h)]
+                        #:when (positive? (bytes-ref argb (* 4 (+ i (* j w))))))
+              (cons i j)))
+      (set! num-solid-pixels (length solid-pixels)))
+    (reset-bm! (read-bitmap (open-input-bytes (convert image 'png-bytes))))
 
     (define visible? #t)
     (define x init-x) ; h-position: positive is right
@@ -251,7 +265,7 @@
 
     (define/public (hide)
       (as-event
-       (unless visible?
+       (when visible?
          (set! visible? #f)
          (set! modified? #t))))
 
@@ -432,5 +446,10 @@
        (send land remove-sprite this)
        (set! land l)
        (send land add-sprite this)))
+
+    (define/public (set-image image)
+      (as-modify-event
+       (define bm (read-bitmap (open-input-bytes (convert image 'png-bytes))))
+       (reset-bm! bm)))
     
     (super-new)))
