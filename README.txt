@@ -1,14 +1,24 @@
+Tutorial mode
+-------------
+
 If you're interested in the tutorial version of this repository,
 see the "tutorial" branch in the git repository.
 
-Install this directory as a Racket collection "scratchy", perhaps by
-running
+Normal mode
+-----------
+
+If you're using Racket v5.1.3.9 or later, use
+
+ raco pkg install scratchy
+
+to download and install the "scratchy" package and collection.
+
+
+For earlier versions, install this directory as a Racket collection
+"scratchy", perhaps by running
 
  raco link scratchy
-
-in the parent directory (assuming that this directory is named
-"scratchy") and then
-
  raco setup scratchy scribblings/main
 
-build bytecode and documentation.
+in the directory directory containing this "README.txt" (as opposed to
+the parent directory of this one).

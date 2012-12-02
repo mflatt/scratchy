@@ -1,6 +1,7 @@
 #lang scribble/manual
 @(require (for-label (except-in racket/base do random if)
                      racket/contract/base
+                     file/convertible
                      (except-in racket/class send)
                      scratchy/runtime
                      (only-in scratchy 
