@@ -1,7 +1,7 @@
 #lang racket/base
 (require "runtime.rkt"
          "images.rkt"
-         "task.rkt"
+         "sync-task.rkt"
          "key.rkt"
          "kw-sprite.rkt")
 
@@ -10,7 +10,7 @@
          (rename-out [module-begin #%module-begin])
 
          (all-from-out "images.rkt"
-                       "task.rkt"
+                       "sync-task.rkt"
                        "key.rkt"
                        "kw-sprite.rkt"))
 

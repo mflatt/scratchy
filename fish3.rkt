@@ -1,7 +1,7 @@
 #lang racket
 (require "runtime.rkt"
          "images.rkt"
-         "task.rkt"
+         "sync-task.rkt"
          "sprite.rkt")
 
 ;; Move tasks to sprites
@@ -20,7 +20,8 @@
          [(left) (send duck move-x -10) (send duck turn-to 270)]
          [(#\space) (send duck turn 10)]
          [(#\+) (send duck change-size #e0.1)]
-         [(#\-) (send duck change-size #e-0.1)])))])
+         [(#\-) (send duck change-size #e-0.1)])))]
+  [task (send fish change-size 0)])
 
 (define-sprite fish
   [image fish-image]

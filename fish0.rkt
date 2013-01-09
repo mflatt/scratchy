@@ -1,12 +1,8 @@
 #lang racket
 (require "runtime.rkt"
-         "images.rkt"
-         "sync-task.rkt")
+         "images.rkt")
 
-;; What if a task references a name before it is defined?
-;; => more run-time support (see "sync-task.rkt")
-
-(task (send fish change-size 0))
+;; Using "runtime.rkt" in plain old Racket
 
 (define duck (new sprite% 
                   [image duck-image]
@@ -30,24 +26,30 @@
 
 (define score 0)
 
-(task
- (forever
-  (sleep 0.02)
-  (send fish forward 2)
-  (send fish turn (- (random 5) 2))
-  (when (send fish touches? aq)
-    (set! score (+ 1 score))
-    (send fish say score))
-  (when (send fish touches? duck)
-    (send fish hush)
-    (send fish turn 180)
-    (while (send fish touches? duck)))))
+(void
+ (thread (lambda ()
+           (let loop ()
+             (sleep 0.02)
+             (send fish forward 2)
+             (send fish turn (- (random 5) 2))
+             (when (send fish touches? aq)
+               (set! score (+ 1 score))
+               (send fish say score))
+             (when (send fish touches? duck)
+               (send fish hush)
+               (send fish turn 180)
+               (let loop ()
+                 (when (send fish touches? duck)
+                   (loop))))
+             (loop)))))
 
-(task
- (forever
-  (sleep 0.1)
-  (send fish change-size #e0.05)
-  (sleep 0.1)
-  (send fish change-size #e-0.05)))
+(void
+ (thread (lambda ()
+           (let loop ()
+             (sleep 0.1)
+             (send fish change-size #e0.05)
+             (sleep 0.1)
+             (send fish change-size #e-0.05)
+             (loop)))))
 
-(run+ (list aq duck fish))
+(run (list aq duck fish))

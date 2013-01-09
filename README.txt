@@ -1,4 +1,4 @@
-You can run the programs "fish1.rkt" through "fish9.rkt" directly in
+You can run the programs "fish0.rkt" through "fish9.rkt" directly in
 Racket or DrRacket, but the complete tutorial requires some setup:
 
  * Install this directory as a Racket collection "scratchy-tutorial",
@@ -26,7 +26,7 @@ can run "fish.rkt" with
 Move the duck using the arrow keys to chase the fish and keep it in
 the blue aquarium. The fish says your current score.
 
-The programs "fish1.rkt" through "fish12.rkt" are the tutorial, ending
+The programs "fish0.rkt" through "fish12.rkt" are the tutorial, ending
 with "fish.rkt" (which looks like a big jump, but it's mostly
 "parser.rkt").
 

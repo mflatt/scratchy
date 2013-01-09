@@ -7,7 +7,7 @@
                     [define-sprite define-sprite/orig])
          (for-syntax racket/base))
 
-(provide define-sprite run+
+(provide define-sprite
          
          move-y move-x turn-to change-size
          forward turn touches? say hush)

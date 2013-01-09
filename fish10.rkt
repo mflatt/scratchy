@@ -1,7 +1,7 @@
 #lang scratchy-tutorial/s-exp
 
 ;; Use the language `scratchy-tutorial/s-exp'
-;; => `reader' submodule
+;; => link as collection, `reader' submodule
 
 (define-sprite duck
   #:image duck-image

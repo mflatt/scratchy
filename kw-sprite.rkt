@@ -1,7 +1,7 @@
 #lang racket/base
 (require "runtime.rkt"
          "images.rkt"
-         "task.rkt"
+         "sync-task.rkt"
          "key.rkt"
          (rename-in "method.rkt" 
                     [define-sprite define-sprite/orig])
