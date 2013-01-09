@@ -5,11 +5,10 @@
                      scratchy/runtime)
           scribble/bnf)
 
-@title{Scratchy: A Scratch-like Toy}
+@title{Scratchy: A Scratch-like Toy --- Tutorial Variant}
 
 Scratchy provides a @link["http://scratch.mit.edu"]{Scratch}-like
-runtime environment plus a simple textual programming language. It was
-originally developed as an example for creating language in Racket.
+runtime environment plus a simple textual programming language.
 
 @table-of-contents[]
 
@@ -17,12 +16,12 @@ originally developed as an example for creating language in Racket.
 
 @section{Textual Language}
 
-@defmodulelang[scratchy]
+@defmodulelang[scratchy-tutorial]
 
 Here's a program for a fish that swims randomly:
 
 @codeblock|{
-#lang scratchy
+#lang scratchy-tutorial
 
 -------------------------------------
 fish
@@ -91,7 +90,7 @@ Here's the grammar of this textual language:
 
 @section{Runtime Functions and Classes}
 
-@defmodule[scratchy/runtime]
+@defmodule[scratchy-tutorial/runtime]
 
 @defproc[(run [sprites (listof (is-a?/c sprite%))]) void?]{
 

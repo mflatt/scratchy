@@ -2,7 +2,7 @@
 
 ;; Use the "exact.rkt" language constructor so that all
 ;;  number constants are parsed as exact
-;; => `syntax/module-reader'
+;; => `syntax/module-reader' (see "exact.rkt")
 
 (define-sprite duck
   #:image duck-image

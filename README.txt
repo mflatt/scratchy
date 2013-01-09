@@ -1,19 +1,25 @@
-Install this directory as a Racket collection "scratchy", perhaps by
-running
+You can run the programs "fish1.rkt" through "fish9.rkt" directly in
+Racket or DrRacket, but the complete tutorial requires some setup:
 
- raco link scratchy
+ * Install this directory as a Racket collection "scratchy-tutorial",
+   perhaps by running
 
-in the parent directory (assuming that this directory is named
-"scratchy") and then
+      raco link scratchy-tutorial
 
- raco setup scratchy scribblings/main
+   in the parent directory (assuming that this directory is named
+   "scratchy-tutorial") and then
 
-build bytecode and documentation.
+ * Run
+
+      raco setup scratchy-tutorial scribblings/main
+
+   build bytecode and documentation.
 
 
-The example "fish.rkt" is a Scratchy program that you can open in
-DrRacket (since it uses inline images), and "fish-test.rkt" is the
-same program using plain text. You can run "fish.rkt" with
+After the above installation steps, the example "fish.rkt" is a
+Scratchy program that you can open in DrRacket (since it uses inline
+images), and "fish-text.rkt" is the same program using plain text. You
+can run "fish.rkt" with
 
  racket fish.rkt
 

@@ -3,8 +3,9 @@
          "images.rkt"
          "task.rkt")
 
-;; Use `task' instead of creating threads directly
-;; => simple pattern-matching macros
+;; Use `forever', `while', and `task', instead of creating 
+;; loops and threads directly
+;; => simple pattern-matching macros (see "task.rkt")
 
 (define duck (new sprite% 
                   [image duck-image]

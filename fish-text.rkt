@@ -1,4 +1,4 @@
-#lang scratchy
+#lang scratchy-tutorial
 
 ----------------------------------------
 duck

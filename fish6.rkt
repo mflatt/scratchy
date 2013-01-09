@@ -7,7 +7,7 @@
 
 ;; Use keywords instead of square brackets, and
 ;;  merge `#:key' forms into a full key handler
-;; => `syntax-parse'
+;; => more `syntax-parse' (see "kw-sprite.rkt")
 
 (define-sprite duck
   #:image duck-image

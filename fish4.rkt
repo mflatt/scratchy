@@ -6,7 +6,7 @@
          "key.rkt")
 
 ;; Use `key-handler' to simplify key dispatch
-;; => macro with syntax checking
+;; => macro with syntax checking (see "key.rkt")
 
 (define-sprite duck
   [image duck-image]

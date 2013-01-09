@@ -1,7 +1,7 @@
 #lang racket/base
 
 (module reader syntax/module-reader
-  #:language 'scratchy/scratchy
+  #:language 'scratchy-tutorial/scratchy
   #:read (lambda (in) 
            (parameterize ([read-decimal-as-inexact #f]) 
              (read in)))
@@ -22,7 +22,7 @@
                     (if (eof-object? v)
                         null
                         (cons v (loop)))))
-    (datum->syntax #f `(module prog scratchy/scratchy
+    (datum->syntax #f `(module prog scratchy-tutorial/scratchy
                          (#%module-begin . ,stxes))))
 
   (define (s-read in)

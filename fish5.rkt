@@ -6,7 +6,7 @@
          "method.rkt")
 
 ;; Set up aliases for methods, so that we don't write `send'
-;; => syntax parameters
+;; => syntax parameters (see "method.rkt")
 
 (define-sprite duck
   [image duck-image]

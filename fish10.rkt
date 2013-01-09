@@ -1,6 +1,6 @@
-#lang scratchy/s-exp
+#lang scratchy-tutorial/s-exp
 
-;; Use the language `scratchy/s-exp'
+;; Use the language `scratchy-tutorial/s-exp'
 ;; => `reader' submodule
 
 (define-sprite duck

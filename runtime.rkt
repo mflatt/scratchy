@@ -9,6 +9,10 @@
 (provide run
          sprite%)
 
+;; This module implements the Scratchy run-time system, which is a fairly
+;; thin layer on top of Racket's GUI and drawing libraries. Also, Scratchy
+;; tasks are implemented as Racket threads.
+
 (define draw-bounds? #f)
 (define draw-hit? #f)
 

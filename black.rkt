@@ -1,7 +1,7 @@
 #lang racket/base
 
 (module reader syntax/module-reader
-  #:language 'scratchy/scratchy
+  #:language 'scratchy-tutorial/scratchy
   #:read (lambda (in) 
            (parameterize ([read-decimal-as-inexact #f]) 
              (read in)))

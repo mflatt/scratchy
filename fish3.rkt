@@ -5,7 +5,7 @@
          "sprite.rkt")
 
 ;; Move tasks to sprites
-;; => pattern-matching macro with multiple cases
+;; => pattern-matching macro with multiple cases  (see "sprite.rkt")
 
 (define-sprite duck
   [image duck-image]

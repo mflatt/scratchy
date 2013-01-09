@@ -1,6 +1,6 @@
-#lang scratchy/noisy
+#lang scratchy-tutorial/noisy
 
-;; Use the language `scratchy/noisy', which starts
+;; Use the language `scratchy-tutorial/noisy', which starts
 ;;  a thread to print logged messages when this
 ;;  module is the main module of a program
 ;; => `#:language-info' and associated submodules

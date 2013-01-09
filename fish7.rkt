@@ -2,7 +2,7 @@
 
 ;; Take over the whole module for automatic `run+'
 ;;  and more control over the language
-;; => `#%module-begin'
+;; => `#%module-begin' (see "almost-scratchy.rkt")
 
 (define-sprite duck
   #:image duck-image

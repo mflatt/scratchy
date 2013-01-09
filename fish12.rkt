@@ -1,4 +1,4 @@
-#lang scratchy/black
+#lang scratchy-tutorial/black
 
 ;; Use the language `scratchy/black', which has
 ;;  a syntax colorer that makes all identifiers

@@ -1,7 +1,7 @@
 #lang s-exp "scratchy.rkt"
 
 ;; The "scratchy.rkt" language prevents abuse of `set!'
-;; => `syntax-local-value'
+;; => `syntax-local-value' (see "scratchy.rkt" and "variable.rkt")
 
 (define-sprite duck
   #:image duck-image

@@ -9,7 +9,7 @@
 ;; To read a module:
 (define (read-syntax src-name in)
   (define stx (parse src-name in))
-  (datum->syntax #f `(module prog scratchy (#%module-begin . ,stx))))
+  (datum->syntax #f `(module prog scratchy-tutorial (#%module-begin . ,stx))))
 
 ;; In case `read' is used, instead of `read-syntax':
 (define (read in)
