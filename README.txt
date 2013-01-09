@@ -1,8 +1,9 @@
 Tutorial mode
 -------------
 
-If you're interested in the tutorial version of this repository,
-see the "tutorial" branch in the git repository.
+If you're interested in the tutorial version of this repository, see
+the "tutorial2" (POPL'13) or "tutorial" (RacketCon'12) branch in the
+git repository.
 
 Normal mode
 -----------
