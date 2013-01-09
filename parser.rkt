@@ -3,7 +3,8 @@
          (prefix-in : parser-tools/lex-sre)
          algol60/cfg-parser
          syntax/readerr
-         (for-syntax racket/base))
+         (for-syntax racket/base
+                     syntax/parse))
 
 (provide lex
          parse
@@ -134,7 +135,7 @@
           [(WHITESPACE) #f]))))
 
 (define-syntax (at-src stx)
-  (syntax-case stx ()
+  (syntax-parse stx
     [(_ e) 
      (with-syntax ([start (datum->syntax stx '$1-start-pos)]
                    [end (datum->syntax stx '$n-end-pos)])

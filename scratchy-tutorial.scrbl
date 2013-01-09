@@ -2,7 +2,7 @@
 @(require (for-label racket/base
                      racket/contract/base
                      racket/class
-                     scratchy/runtime)
+                     scratchy-tutorial/runtime)
           scribble/bnf)
 
 @title{Scratchy: A Scratch-like Toy --- Tutorial Variant}

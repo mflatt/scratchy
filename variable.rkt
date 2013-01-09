@@ -1,5 +1,6 @@
 #lang racket/base
-(require (for-syntax racket/base))
+(require (for-syntax racket/base
+                     syntax/parse))
 
 (provide define-variable
          (for-syntax variable?))
@@ -10,13 +11,13 @@
    prop:set!-transformer
    (lambda (self stx)
      (with-syntax ([id (variable-id self)])
-       (syntax-case stx (set!)
+       (syntax-parse stx #:literals (set!)
          [(set! _ rhs) (syntax/loc stx (set! id rhs))]
          [(_ arg ...) (syntax/loc stx (id arg ...))]
          [_ #'id])))))
 
 (define-syntax (define-variable stx)
-  (syntax-case stx ()
+  (syntax-parse stx
     [(_ id rhs)
      #'(begin
          (define-syntax id (variable #'gen-id))
