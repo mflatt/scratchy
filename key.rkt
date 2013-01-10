@@ -13,7 +13,8 @@
        [(is-key? given-key 'key) expr ...]
        ...))))
 
-;; Better syntax checking:
+;; Better syntax checking, manual:
+#;#;2
 (define-syntax (key-handler stx)
   (syntax-parse stx
     [(_ [key expr ...] ...)
@@ -24,6 +25,16 @@
                              "not an identifier for a key"
                              stx
                              k)))
+     #'(lambda (down? given-key)
+         (when down?
+           (cond
+            [(is-key? given-key 'key) expr ...]
+            ...)))]))
+
+;; Better syntax checking, uses `:id' pattern of `syntax-parse':
+(define-syntax (key-handler stx)
+  (syntax-parse stx
+    [(_ [key:id expr ...] ...)
      #'(lambda (down? given-key)
          (when down?
            (cond

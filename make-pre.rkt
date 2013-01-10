@@ -3,6 +3,8 @@
 (define dest "/tmp/pre-scratchy")
 
 (define (adjust!)
+  (rm "slides")
+  (rm "compiled")
   (rm "make-pre.rkt")
   (rm "README.txt")
   (rm "info.rkt")
@@ -30,6 +32,8 @@
   (delete-definition "key.rkt" 'key-handler)
   (delete-line "key.rkt" #rx"Ok, but")
   (delete-line "key.rkt" #rx"Better")
+  (delete-line "key.rkt" #rx"#;#;2")
+  (delete-definition "key.rkt" 'key-handler)
   (delete-line "key.rkt" #rx"#;")
   (delete-all-requires "key.rkt")
 
@@ -57,7 +61,10 @@
 (copy-directory/files "." dest)
 
 (define (rm f)
-  (delete-file (build-path dest f)))
+  (define p (build-path dest f))
+  (if (file-exists? p)
+      (delete-file p)
+      (delete-directory/files p)))
 
 (define (delete-line file-name rx)
   (define file (build-path dest file-name))
