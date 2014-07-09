@@ -8,7 +8,7 @@ git repository.
 Normal mode
 -----------
 
-If you're using Racket v5.1.3.9 or later, use
+If you're using Racket v5.3.1.9 or later, use
 
  raco pkg install scratchy
 
