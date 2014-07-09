@@ -8,4 +8,5 @@
                "gui-lib"
                "parser-tools-lib"
                "slideshow-lib"))
-(define build-deps '("scribble-lib"))
+(define build-deps '("racket-doc"
+                     "scribble-lib"))
